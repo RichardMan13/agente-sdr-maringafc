@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  dogao-agent:
+    build: .
+    container_name: mfc_sdr_agent
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
+    restart: always

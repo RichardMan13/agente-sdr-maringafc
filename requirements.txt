@@ -1,0 +1,17 @@
+langchain-community
+langchain-core
+langchain-openai
+langgraph
+langgraph-prebuilt
+langgraph-sdk
+supabase
+pandas
+numpy
+python-dotenv
+openai
+sentence-transformers
+scikit-learn
+prefect
+pydantic
+requests
+langgraph-cli[inmem]

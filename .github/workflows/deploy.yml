@@ -1,0 +1,31 @@
+name: Deploy Agente MFC para Azure
+
+on:
+  push:
+    branches: [ "main" ] # Dispara o deploy sempre que houver push na main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout do Código
+      uses: actions/checkout@v4
+
+    - name: Login no Azure
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build e Push da Imagem Docker
+      run: |
+        docker build -t mfc-sdr-agent .
+        # Aqui você adicionaria os comandos para dar tag e push para o ACR
+        # docker tag mfc-sdr-agent ${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest
+        # docker push ${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest
+
+    - name: Azure Web App Deploy
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: 'agente-sdr-maringafc'
+        images: 'mfc-sdr-agent:latest'
