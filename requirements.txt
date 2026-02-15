@@ -15,3 +15,5 @@ prefect
 pydantic
 requests
 langgraph-cli[inmem]
+fastapi
+uvicorn

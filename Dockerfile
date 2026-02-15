@@ -20,4 +20,4 @@ COPY . .
 
 # Comando para iniciar o agente
 # Como você usa LangGraph, aqui você pode iniciar um script de interface ou API
-CMD ["python", "src/agent.py"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "80"]

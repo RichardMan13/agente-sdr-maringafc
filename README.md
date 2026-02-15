@@ -53,13 +53,13 @@ Acompanhamento em tempo real das etapas de desenvolvimento do agente.
 - [x] **Prompt Engineering:** Definição da persona SDR e diretrizes de comportamento.
 - [x] **Intent Classification:** Lógica para separar leads de vendas de dúvidas de SAC.
 - [x] **Memory Management:** Histórico de conversa persistido para manutenção de contexto.
-- [x] **SDR Tracking:** Gatilhos para salvamento de novos leads na tabela `leads_sdr`.
+- [x] **SDR Tracking & Graph Logic:** Lógica de Grafo e SDR Tracking concluída.
 
 ### ☁️ Fase 3: Infraestrutura e Migração (AWS ➡️ Azure)
 - [x] **Dockerization:** Criação de Dockerfile para portabilidade entre nuvens.
 - [ ] **Prefect Cloud:** Orquestração dos fluxos de atualização de dados (ETL).
-- [ ] **Azure Resource Setup:** Provisionamento de App Service/Functions para o backend.
-- [ ] **CI/CD Pipeline:** GitHub Actions configurado para deploy automatizado na Azure.
+- [x] **Azure Resource Setup:** Provisionamento de App Service/Functions para o backend.
+- [x] **CI/CD Pipeline:** GitHub Actions configurado para deploy automatizado na Azure.
 - [ ] **Final Validation:** Testes de carga e validação de latência pós-migração.
 
 ---
