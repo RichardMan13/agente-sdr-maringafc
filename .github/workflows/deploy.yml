@@ -2,7 +2,7 @@ name: Deploy Agente MFC para Azure
 
 on:
   push:
-    branches: [ "main" ] # Dispara o deploy sempre que houver push na main
+    branches: [ "main" ]
 
 jobs:
   build-and-deploy:
@@ -12,20 +12,29 @@ jobs:
     - name: Checkout do Código
       uses: actions/checkout@v4
 
-    - name: Login no Azure
+    - name: Login no Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        # Usa o URL do seu ACR (mfcagente.azurecr.io)
+        login-server: ${{ secrets.AZURE_REGISTRY_URL }}
+        username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+        password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+    - name: Build e Push da Imagem Docker
+      run: |
+        # Constrói a imagem com a tag completa do seu registro
+        docker build -t ${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest .
+        # Faz o envio real para a aba 'Repositórios' do seu ACR
+        docker push ${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest
+
+    - name: Login no Azure via CLI
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Build e Push da Imagem Docker
-      run: |
-        docker build -t mfc-sdr-agent .
-        # Aqui você adicionaria os comandos para dar tag e push para o ACR
-        # docker tag mfc-sdr-agent ${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest
-        # docker push ${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest
-
-    - name: Azure Web App Deploy
+    - name: Deploy para o Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'agente-sdr-maringafc'
-        images: 'mfc-sdr-agent:latest'
+        # Avisa ao Web App qual imagem exata ele deve puxar
+        images: '${{ secrets.AZURE_REGISTRY_URL }}/mfc-sdr-agent:latest'
