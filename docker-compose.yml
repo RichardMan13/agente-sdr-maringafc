@@ -3,7 +3,7 @@ version: '3.8'
 services:
   dogao-agent:
     build: .
-    container_name: mfc_sdr_agent
+    container_name: mfc-sdr-agent
     env_file:
       - .env
     volumes:
