@@ -17,3 +17,6 @@ requests
 langgraph-cli[inmem]
 fastapi
 uvicorn
+tavily-python
+beautifulsoup4
+langchain-text-splitters

@@ -3,7 +3,10 @@ import asyncio
 import uuid
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
-from agent import dogao_agent
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.agent import dogao_agent
 
 # Carrega variáveis de ambiente
 load_dotenv()

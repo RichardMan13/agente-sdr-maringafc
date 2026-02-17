@@ -1,78 +1,150 @@
 # ⚽ Agente SDR Inteligente - Maringá FC
 
-Este projeto consiste no desenvolvimento de um agente de IA especializado em atendimento e vendas (SDR/SAC Nível 1) para o **Maringá Futebol Clube**. O sistema utiliza arquitetura **RAG (Retrieval-Augmented Generation)** para fornecer respostas precisas baseadas em dados reais do clube, garantindo uma transição fluida entre infraestruturas de nuvem.
+Este projeto implementa um **Agente de IA SDR (Sales Development Representative)** para o **Maringá Futebol Clube**. O sistema utiliza uma arquitetura avançada de **Adaptive RAG (Retrieval-Augmented Generation)** com **LangGraph** para qualificar leads, tirar dúvidas e impulsionar vendas de planos de sócio-torcedor e produtos oficiais.
 
-## 🎯 Desafio
-Converter interessados em sócios-torcedores através de uma base de conhecimento dinâmica, mantendo a resiliência técnica durante a migração de infraestrutura da **AWS para Azure**.
+## 🎯 Objetivo
+Transformar o atendimento digital do Maringá FC em um canal ativo de receitas, utilizando IA para:
+1.  🏆 **Vender o Sócio Torcedor (Maringá Paixão)**.
+2.  👕 **Vender Produtos da Loja Oficial**.
+3.  📝 **Capturar e Qualificar Leads**.
+4.  🤝 **Resolver Dúvidas (SAC Nível 1)**.
+
+---
+
+## 🏗️ Arquitetura do Agente (LangGraph)
+
+O agente não segue um fluxo linear simples. Ele utiliza um grafo de estados (**StateGraph**) para tomar decisões dinâmicas, corrigir buscas falhas e garantir a qualidade da resposta.
+
+![Arquitetura do Agente](agent_architecture.png)
+
+### Fluxo de Decisão:
+1.  **Summarizer:** Resume o histórico da conversa para manter o contexto sem estourar o limite de tokens.
+2.  **Agent Router:** Decide a ação com base na intenção do usuário:
+    *   *Dúvidas sobre Sócio/Jogos/Clube:* Chama ferramenta de **RAG (Supabase)**.
+    *   *Dúvidas sobre Produtos/Camisas:* Chama ferramenta de **Busca na Loja (Tavily)**.
+    *   *Conversa fiada/Saudação:* Responde diretamente.
+3.  **Tools:** Executa as buscas (Vetorial ou Web).
+4.  **Grade Documents:** Avalia se os documentos retornados respondem à pergunta.
+    *   *Se Ruim:* Reescreve a pergunta (**Rewrite Question**) e tenta buscar novamente.
+    *   *Se Bom:* Segue para geração de resposta.
+5.  **Generate Answer:** Gera a resposta final com o contexto validado.
+6.  **Lead Tracker:** Extrai dados do usuário (Nome, Telefone, Plano de Interesse) e salva no CRM (Supabase).
 
 ---
 
 ## 🛠️ Stack Tecnológica
-- **Linguagem:** Python (Pandas, Scikit-learn, LangChain)
-- **Banco de Dados:** Supabase (PostgreSQL + pgvector)
-- **Orquestração:** Prefect
-- **Infraestrutura:** Docker, AWS (atual) e Azure (destino)
-- **IA:** OpenAI API (Embeddings e LLM)
+
+*   **Linguagem:** Python 3.10+
+*   **Orquestração de Agentes:** [LangGraph](https://langchain-ai.github.io/langgraph/)
+*   **LLM & Embeddings:** OpenAI (GPT-4o, text-embedding-3-small)
+*   **Banco Vetorial:** Supabase (pgvector)
+*   **Tools:**
+    *   *Retrieval:* Busca semântica em documentos do clube.
+    *   *Web Search:* Tavily API (Busca na Store oficial).
+*   **Ingestão de Dados:**
+    *   *Web Crawler:* BeautifulSoup4 (Scraping do site oficial).
+    *   *Documentos Locais:* LangChain Text Splitters.
+*   **API:** FastAPI (Backend)
+*   **Deploy:** Docker & Azure App Service
 
 ---
 
-## 📋 Plano de Execução Técnica
+## 📂 Estrutura do Projeto
 
-### Fase 1: Camada de Dados e Vetorização (Supabase + Hybrid Search)
-O Supabase atua como o core da persistência e busca semântica.
-* **Armazenamento:** Utilização do `pgvector` para armazenar embeddings de manuais, planos e FAQs do clube.
-* **Pipeline de Ingestão:** Script em Python para realizar o *chunking* de documentos e geração de vetores.
-* **Data Quality:** Implementação de checks de qualidade para evitar o uso de planos ou preços obsoletos.
-
-### Fase 2: Orquestração e Lógica do Agente (LangChain / CrewAI)
-Desenvolvimento da inteligência e comportamento do bot.
-* **Fluxo de RAG:** Cadeia de busca otimizada para reduzir o consumo de tokens e aumentar a precisão.
-* **Identificação de Intenção:** Modelos de classificação para distinguir entre "Dúvidas de SAC" e "Oportunidades de Venda".
-* **Memória de Curto Prazo:** Persistência do histórico da conversa para manter o contexto do torcedor.
-
-### Fase 3: Infraestrutura e Migração (AWS ➡️ Azure)
-O diferencial estratégico focado em disponibilidade e escalabilidade.
-* **Estado Atual (AWS):** Execução via AWS Lambda/ECS orquestrada por Prefect.
-* **Dockerização:** Containerização completa para garantir paridade entre os ambientes de nuvem.
-* **Estratégia de Migração:** Deploy automatizado via CI/CD para Azure App Service/Functions com foco em zero downtime.
-
-## ✅ Status do Projeto & Checklist Técnico
-
-Acompanhamento em tempo real das etapas de desenvolvimento do agente.
-
-### 🏁 Fase 1: Camada de Dados e Vetorização
-- [x] **Database Setup:** Extensão `pgvector` habilitada e tabelas criadas no Supabase.
-- [x] **Ambiente Local:** Configuração de `.gitignore`, `requirements.txt` e conexão validada.
-- [x] **Data Curation:** Extração manual de Sócio, Ingressos, FAQ e Pontos de Venda em arquivos .txt.
-- [x] **Document Processing:** Lógica de *chunking* para fragmentação semântica dos planos de sócio.
-- [x] **Vectorization Pipeline:** Integração com OpenAI para geração de embeddings (1536d).
-- [x] **Data Ingestion:** Script de carga automatizada para o banco vetorial.
-
-### 🤖 Fase 2: Orquestração e Lógica do Agente
-- [x] **RAG Chain:** Implementação da busca por similaridade via LangChain.
-- [x] **Prompt Engineering:** Definição da persona SDR e diretrizes de comportamento.
-- [x] **Intent Classification:** Lógica para separar leads de vendas de dúvidas de SAC.
-- [x] **Memory Management:** Histórico de conversa persistido para manutenção de contexto.
-- [x] **SDR Tracking & Graph Logic:** Lógica de Grafo e SDR Tracking concluída.
-
-### ☁️ Fase 3: Infraestrutura e Migração (AWS ➡️ Azure)
-- [x] **Dockerization:** Criação de Dockerfile para portabilidade entre nuvens.
-- [ ] **Prefect Cloud:** Orquestração dos fluxos de atualização de dados (ETL).
-- [x] **Azure Resource Setup:** Provisionamento de App Service/Functions para o backend.
-- [x] **CI/CD Pipeline:** GitHub Actions configurado para deploy automatizado na Azure.
-- [ ] **Final Validation:** Testes de carga e validação de latência pós-migração.
-
----
-
-## 🏗️ Arquitetura do Banco de Dados
-O modelo segue uma estrutura otimizada para busca vetorial e gestão de leads.
-
-[Insira aqui o link ou imagem do seu diagrama do dbdiagram.io]
+```
+agente-sdr-maringafc/
+├── src/
+│   ├── agent.py            # Lógica central do LangGraph (Nós, Arestas e Tools)
+│   ├── ingestion_web.py    # Crawler do site maringafc.com.br
+│   ├── main.py             # API FastAPI para deploy
+│   └── visualize_graph.py  # Gera a imagem da arquitetura
+├── tests/
+│   ├── test_agent_local.py # Testa o agente no terminal (Mock local)
+│   └── test_chat_api.py    # Testa o endpoint da API rodando (Simulador de Client)
+├── Dockerfile              # Configuração de container
+├── requirements.txt        # Dependências do projeto
+└── README.md               # Documentação
+```
 
 ---
 
 ## 🚀 Como Executar
-1. Clone o repositório.
-2. Configure o arquivo `.env` com suas credenciais do Supabase e OpenAI.
-3. Instale as dependências: `pip install -r requirements.txt`.
-4. Execute o pipeline de ingestão: `python src/ingestion.py`.
+
+### 1. Pré-requisitos
+*   Python 3.10+
+*   Conta no [Supabase](https://supabase.com/) (com pgvector habilitado).
+*   Chave de API da [OpenAI](https://openai.com/).
+*   Chave de API do [Tavily](https://tavily.com/) (para busca na loja).
+
+### 2. Configuração
+Clone o repositório e crie um arquivo `.env` na raiz:
+
+```env
+OPENAI_API_KEY=sk-...
+SUPABASE_URL=https://...
+SUPABASE_KEY=eyJ...
+TAVILY_API_KEY=tvly-...
+```
+
+Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Ingestão de Dados (Base de Conhecimento)
+Popule o banco vetorial com dados do site e arquivos locais:
+
+```bash
+# Ingestão do Site Oficial (Crawler)
+python src/ingestion_web.py
+
+# Ingestão de Arquivos Locais (data/*.txt)
+python src/ingestion.py
+```
+
+### 4. Testando o Agente
+
+**Teste Local (Terminal):**
+Interaja com o agente diretamente no terminal para validar a lógica.
+```bash
+python tests/test_agent_local.py
+```
+
+**Teste da API:**
+Suba o servidor e use o script de teste de chat.
+```bash
+# Terminal 1: Subir API
+uvicorn src.main:app --reload
+
+# Terminal 2: Simular Cliente
+python tests/test_chat_api.py
+```
+
+### 5. Visualizar Arquitetura
+Gere o diagrama atualizado do grafo do agente:
+```bash
+python -m src.visualize_graph
+```
+
+---
+
+## ✅ Status do Projeto
+
+### Fase 1: Dados & Ingestão
+- [x] Database Setup (Supabase + pgvector)
+- [x] Ingestão de Arquivos Locais (.txt)
+- [x] Web Crawler (maringafc.com.br)
+- [x] Limpeza de Dados (Remoção de ruídos de scraping)
+
+### Fase 2: Inteligência (LangGraph)
+- [x] Arquitetura RAG Adaptativa (Self-Correction)
+- [x] Tool: Busca na Loja (Tavily)
+- [x] Persona SDR "Dogão" (Foco em vendas)
+- [x] Memória de Conversa (Summarization)
+- [x] Rastreamento de Leads (Nome/Plano -> CRM)
+
+### Fase 3: Infraestrutura
+- [x] API FastAPI
+- [x] Dockerização
+- [x] Deploy Azure (App Service)
+- [ ] CI/CD (GitHub Actions)
